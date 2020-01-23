@@ -3,5 +3,6 @@ export ASDF_INSTALL_VERSION=0.13.46
 export ASDF_INSTALL_PATH=./tmp/$ASDF_INSTALL_VERSION
 
 rm -rf $ASDF_INSTALL_PATH
+mkdir -p $ASDF_INSTALL_PATH
 
 ./bin/install
