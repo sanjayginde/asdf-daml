@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+
+# This is modeled after the asdf-postgres plugin:
+# https://github.com/smashedtoatoms/asdf-postgres/
+
+
+versions_list=$(
+  curl -s https://github.com/digital-asset/daml/releases/                          |
+  grep -Eoh '>daml-sdk-[0-9]+\.[0-9]+(\.[0-9]+)?(\.[0-9]+)?-macos.tar.gz<' | # Find version numbers
+  sed -e 's/[<>]//g'                                                               | # Remove angle brackets
+  sed -e 's/daml-sdk\-//g'                                           | # Remove leading 'ansible-''
+  sed -e 's/\-macos.tar.gz//g'                                                           | # Remove trailing '.tar.gz'
+  sort -t '.' -k 1,1n -k 2,2n -k 3,3n                                                # Sort by version number
+)
+versions=""
+
+for version in ${versions_list}
+do
+  versions="${versions} ${version}"
+done
+
+echo "$versions"

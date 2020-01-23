@@ -1,0 +1,58 @@
+
+#!/usr/bin/env bash
+
+# This is modeled after the asdf-hashicorp plugin:
+# https://github.com/Banno/asdf-hashicorp
+
+readonly TMP_DOWNLOAD_DIR="$(mktemp -d -t "asdf_daml_XXXXXX")"
+trap 'rm -rf "${TMP_DOWNLOAD_DIR?}"' EXIT
+
+install_provider() {
+  local install_type=$1
+  local version=$2
+  local install_path=$3
+
+  local -r download_url="$(get_download_url "${version}")"
+  local -r download_path="${TMP_DOWNLOAD_DIR}/$(get_filename "${version}")"
+
+  echo "install path: $install_path"
+
+  echo "Downloading daml version ${version} from ${download_url}"
+  if curl -fsL "${download_url}" -o "${download_path}"; then
+    echo "Extracting daml archive"
+    mkdir ${install_path}
+    tar xfz "${download_path}" -C "${install_path}" --strip 1 "sdk-${version}"
+  else
+    echo "Error: daml version ${version} not found" >&2
+    exit 1
+  fi
+}
+
+get_osname() {
+  local -r arch="$(uname -s)"
+
+  if [ "${arch}" = "Linux" ] ; then
+    echo "linux"
+  elif [ "${arch}" = "Darwin" ] ; then
+      echo "macos"
+  else
+    echo "Operating system not supported:"
+    echo "  ARCH = ${arch}"
+    exit 1
+  fi
+}
+
+get_filename () {
+  local -r version="$1"
+  local -r osname="$(get_osname)"
+  echo "daml-sdk-${version}-${osname}.tar.gz"
+}
+
+get_download_url () {
+  local -r version="$1"
+  # local -r osname="$(get_osname)"
+  local -r filename="$(get_filename "${version}")"
+  echo "https://github.com/digital-asset/daml/releases/download/v${version}/${filename}"
+}
+
+install_provider $ASDF_INSTALL_TYPE $ASDF_INSTALL_VERSION $ASDF_INSTALL_PATH
