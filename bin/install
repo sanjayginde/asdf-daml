@@ -20,8 +20,10 @@ install_provider() {
   echo "Downloading daml version ${version} from ${download_url}"
   if curl -fsL "${download_url}" -o "${download_path}"; then
     echo "Extracting daml archive"
-    mkdir ${install_path}
     tar xfz "${download_path}" -C "${install_path}" --strip 1 "sdk-${version}"
+
+    echo "Installing..."
+    DAML_HOME=${install_path} ${install_path}/install.sh
   else
     echo "Error: daml version ${version} not found" >&2
     exit 1
